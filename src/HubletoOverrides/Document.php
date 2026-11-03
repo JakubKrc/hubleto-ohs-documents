@@ -157,12 +157,19 @@ class Document extends CommunityDocument
   {
     $record = parent::onBeforeUpdate($record);
 
-    // The link, the author and the creation date stay as when the document was created (both legacy apps).
-    $record = $this->keepStoredValues($record, ['model', 'record_id', 'id_created_by', 'created_on']);
     // A save that leaves out the priority would store 0 for it (Hubleto), so the stored value is used.
     $record = $this->addStoredValuesOfMissingColumns($record, ['hlthcr_priority']);
     $originalDocument = $this->record->where('id', (int) $record['id'])->first();
     $record = $this->keepStoredFile($record, 'hlthcr_file', $originalDocument);
+
+    // The link, the author and the creation date stay as when the document was created (both legacy apps).
+    // Read from the array: on a stored record, "->model" is the record manager's own property, not the column.
+    if ($originalDocument) {
+      $storedValues = $originalDocument->toArray();
+      foreach (['model', 'record_id', 'id_created_by', 'created_on'] as $column) {
+        $record[$column] = $storedValues[$column] ?? null;
+      }
+    }
 
     /** @var DocumentLinks */
     $documentLinks = $this->getService(DocumentLinks::class);
