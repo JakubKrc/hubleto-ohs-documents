@@ -3,31 +3,34 @@ import { type TableMeta, type TableProps } from '@hubleto/react-ui/components/fc
 import FormDocument from './FormDocument'
 
 interface TableDocumentsProps extends TableProps {
-  idCustomer?: number,
-  idBranch?: number,
-  idAudit?: number,
+  linkedModel?: string,
+  linkedRecordId?: number,
 }
 
 const componentName = 'TableDocuments'
 const parentApp = 'Hubleto/App/External/WaiBlue/HlthcrDocuments'
 
-// Used as the main list and as a tab of the customer, branch and audit forms.
+// Hubleto's documents: the work documents list, or a tab of a client, branch or audit form (linked by model + record id).
 const TableDocuments = (props: TableDocumentsProps) => {
-  const idCustomer = props.idCustomer ?? 0;
-  const idBranch = props.idBranch ?? 0;
-  const idAudit = props.idAudit ?? 0;
+  const linkedModel = props.linkedModel ?? '';
+  const linkedRecordId = props.linkedRecordId ?? 0;
+  const isTabOfRecord = linkedModel != '' && linkedRecordId > 0;
 
-  const formDefaultValues: Record<string, number> = {};
-  if (idCustomer > 0) formDefaultValues.id_customer = idCustomer;
-  if (idBranch > 0) formDefaultValues.id_branch = idBranch;
-  if (idAudit > 0) formDefaultValues.id_audit = idAudit;
+  const endpointParams: Record<string, any> = {hlthcrDocuments: !isTabOfRecord};
+  const formDefaultValues: Record<string, any> = {};
+  if (isTabOfRecord) {
+    endpointParams.linkedModel = linkedModel;
+    endpointParams.linkedRecordId = linkedRecordId;
+    formDefaultValues.model = linkedModel;
+    formDefaultValues.record_id = linkedRecordId;
+  }
 
   return <Table
     componentName={componentName}
     parentApp={parentApp}
-    model={parentApp + '/Models/Document'}
+    model='Hubleto/App/Community/Documents/Models/Document'
     baseUrlSlug='hlthcr-documents/documents'
-    endpointParams={{idCustomer: idCustomer, idBranch: idBranch, idAudit: idAudit}}
+    endpointParams={endpointParams}
     formDefaultValues={formDefaultValues}
     formModalProps={{type: 'right wide'}}
     renderForm={(table: TableMeta) => <FormDocument {...table.getDefaultFormProps()} />}

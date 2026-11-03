@@ -11,25 +11,6 @@
         "Waiting for processing": "Čaká na spracovanie",
         "Returned with comments": "Pripomienkovaný"
     },
-    "Models\\Document": {
-        "Document name": "Názov dokumentu",
-        "Client": "Klient",
-        "Branch": "Prevádzka",
-        "Leave empty for a document of the whole client.": "Nechajte prázdne pre dokument celého klienta.",
-        "Created on": "Dátum vytvorenia",
-        "Document": "Dokument",
-        "Priority": "Priorita dokumentu",
-        "Created by": "Vytvoril",
-        "Workflow": "Workflow",
-        "State": "Stav",
-        "Add document": "Pridať dokument",
-        "All": "Všetky",
-        "Audit": "Audit",
-        "Only for a document of an audit.": "Iba pre dokument auditu.",
-        "Choose a state of this record's own workflow.": "Vyberte stav z vlastného workflow tohto záznamu.",
-        "The audit is not one of the chosen branch.": "Audit nepatrí k zvolenej prevádzke.",
-        "The branch is not one of the chosen client.": "Prevádzka nepatrí k zvolenému klientovi."
-    },
     "Controllers\\Home": {
         "Work documents": "Pracovné dokumenty",
         "Settings": "Nastavenia"
@@ -43,7 +24,9 @@
         "Document - {{ name }}": "Dokument - {{ name }}"
     },
     "Components\\FormDocument": {
-        "Work document": "Pracovný dokument"
+        "Work document": "Pracovný dokument",
+        "Client": "Klient",
+        "Belongs to": "Priradenie"
     },
     "Loader": {
         "Documents": "Dokumenty",
@@ -56,5 +39,12 @@
         "Settings": "Nastavenia",
         "Document states": "Stavy dokumentov",
         "The states of work documents are a workflow. You can rename them or add your own states.": "Stavy pracovných dokumentov sú workflow. Môžete ich premenovať alebo pridať vlastné."
+    },
+    "Services\\DocumentColumns": {
+        "Priority": "Priorita dokumentu",
+        "Document": "Dokument"
+    },
+    "EventListeners\\LinkedRecordChanges": {
+        "It has work documents, so it cannot be deleted.": "Má pracovné dokumenty, preto sa nedá zmazať."
     }
 }

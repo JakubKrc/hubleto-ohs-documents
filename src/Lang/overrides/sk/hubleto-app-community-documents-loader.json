@@ -1,0 +1,14 @@
+{
+    "Models\\Document": {
+        "Document": "Dokument",
+        "Client": "Klient",
+        "Belongs to": "Priradenie",
+        "State": "Stav",
+        "Priority": "Priorita dokumentu",
+        "All": "Všetky",
+        "Add document": "Pridať dokument",
+        "Created on": "Dátum vytvorenia",
+        "The document must belong to a client, a branch or an audit you can see.": "Dokument musí patriť ku klientovi, prevádzke alebo auditu, ktorý vidíte.",
+        "Choose a state of this record's own workflow.": "Vyberte stav z vlastného workflow tohto záznamu."
+    }
+}

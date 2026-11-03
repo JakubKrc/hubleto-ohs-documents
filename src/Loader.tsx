@@ -8,51 +8,36 @@ import TableDocuments from './Components/FC/TableDocuments'
 const parentApp = 'Hubleto/App/External/WaiBlue/HlthcrDocuments';
 const T = new Translator(parentApp + '/Loader', 'Loader');
 
-// "Dokumenty" tab in the customer form: documents of the whole client (not of a branch or an audit).
+// "Dokumenty" tabs: the documents linked directly to the client, the branch or the audit (Hubleto's model + record id).
+const CUSTOMER_MODEL = 'Hubleto/App/Community/Customers/Models/Customer';
+const BRANCH_MODEL = 'Hubleto/App/External/WaiBlue/HlthcrBranches/Models/Branch';
+const AUDIT_MODEL = 'Hubleto/App/External/WaiBlue/HlthcrAudits/Models/Audit';
+
+function mountDocumentsTab(linkedModel: string, saveFirstText: string) {
+  return {
+    title: T.translate('Documents'),
+    content: (form: FormMeta) => {
+      if (form.id <= 0) return <div className='alert alert-info'>{saveFirstText}</div>;
+      return <TableDocuments
+        uid={form.uid + '_table_documents'}
+        parentForm={form}
+        linkedModel={linkedModel}
+        linkedRecordId={form.id}
+      />;
+    },
+  };
+}
+
 function mountCustomerDocumentsTab() {
-  return {
-    title: T.translate('Documents'),
-    content: (form: FormMeta) => {
-      if (form.id <= 0) return <div className='alert alert-info'>{T.translate('Save the client first.')}</div>;
-      return <TableDocuments uid={form.uid + '_table_documents'} parentForm={form} idCustomer={form.id} />;
-    },
-  };
+  return mountDocumentsTab(CUSTOMER_MODEL, T.translate('Save the client first.'));
 }
 
-// "Dokumenty" tab in the branch form (HlthcrBranches): documents of the branch, not of its audits.
-// New documents get the branch and its client.
 function mountBranchDocumentsTab() {
-  return {
-    title: T.translate('Documents'),
-    content: (form: FormMeta) => {
-      if (form.id <= 0) return <div className='alert alert-info'>{T.translate('Save the branch first.')}</div>;
-      const idCustomer = Number(form.originalRecord?.id_customer ?? 0);
-      return <TableDocuments
-        uid={form.uid + '_table_documents'}
-        parentForm={form}
-        idBranch={form.id}
-        formDefaultValues={{id_branch: form.id, id_customer: idCustomer}}
-      />;
-    },
-  };
+  return mountDocumentsTab(BRANCH_MODEL, T.translate('Save the branch first.'));
 }
 
-// "Dokumenty" tab in the audit form (HlthcrAudits).
 function mountAuditDocumentsTab() {
-  return {
-    title: T.translate('Documents'),
-    content: (form: FormMeta) => {
-      if (form.id <= 0) return <div className='alert alert-info'>{T.translate('Save the audit first.')}</div>;
-      const idBranch = Number(form.originalRecord?.id_branch ?? 0);
-      const idCustomer = Number(form.originalRecord?.BRANCH?.id_customer ?? 0);
-      return <TableDocuments
-        uid={form.uid + '_table_documents'}
-        parentForm={form}
-        idAudit={form.id}
-        formDefaultValues={{id_audit: form.id, id_branch: idBranch, id_customer: idCustomer}}
-      />;
-    },
-  };
+  return mountDocumentsTab(AUDIT_MODEL, T.translate('Save the audit first.'));
 }
 
 class HlthcrDocumentsApp extends App {

@@ -2,8 +2,10 @@
 
 namespace Hubleto\App\External\WaiBlue\HlthcrDocuments;
 
+use Hubleto\App\Community\Documents\Models\Document;
 use Hubleto\App\Community\Workflow\Models\WorkflowStep;
 use Hubleto\App\External\WaiBlue\HlthcrCore\Services\CalendarAuthor;
+use Hubleto\App\External\WaiBlue\HlthcrDocuments\Services\DocumentLinks;
 
 /**
  * Work documents in the Hubleto calendar, one all-day event on the creation date (as in the legacy calendar).
@@ -29,8 +31,9 @@ class Calendar extends \Hubleto\App\Community\Calendar\Calendar
 
   public function loadEvent(int $id): array
   {
-    $document = $this->getModel(Models\Document::class)->record->prepareReadQuery()
-      ->where('hlthcr_documents.id', $id)
+    $document = $this->getModel(Document::class)->record->prepareReadQuery()
+      ->whereIn('documents.model', DocumentLinks::LINKED_MODELS)
+      ->where('documents.id', $id)
       ->first()
     ;
     if (!$document) return [];
@@ -39,14 +42,16 @@ class Calendar extends \Hubleto\App\Community\Calendar\Calendar
 
   public function loadEvents(string $dateStart, string $dateEnd, array $filter = []): array
   {
-    $query = $this->getModel(Models\Document::class)->record->prepareReadQuery()
-      ->where('hlthcr_documents.date_created', '>=', $dateStart)
-      ->where('hlthcr_documents.date_created', '<=', $dateEnd)
+    // Only work documents; Hubleto's own documents are not in the legacy calendar.
+    $query = $this->getModel(Document::class)->record->prepareReadQuery()
+      ->whereIn('documents.model', DocumentLinks::LINKED_MODELS)
+      ->where('documents.created_on', '>=', $dateStart)
+      ->where('documents.created_on', '<=', $dateEnd)
     ;
 
     $idAuthor = $this->getService(CalendarAuthor::class)->getAuthorIdToShow($filter);
     if ($idAuthor > 0) {
-      $query = $query->where('hlthcr_documents.id_author', $idAuthor);
+      $query = $query->where('documents.id_created_by', $idAuthor);
     }
 
     $doneStepIds = $this->getModel(WorkflowStep::class)->record
@@ -59,11 +64,11 @@ class Calendar extends \Hubleto\App\Community\Calendar\Calendar
     $completedFilter = (int) ($filter['fCompleted'] ?? 0);
     if ($completedFilter == 1) {
       $query = $query->where(function ($notDoneQuery) use ($doneStepIds) {
-        $notDoneQuery->whereNotIn('hlthcr_documents.id_workflow_step', $doneStepIds)
-          ->orWhereNull('hlthcr_documents.id_workflow_step');
+        $notDoneQuery->whereNotIn('documents.id_workflow_step', $doneStepIds)
+          ->orWhereNull('documents.id_workflow_step');
       });
     }
-    if ($completedFilter == 2) $query = $query->whereIn('hlthcr_documents.id_workflow_step', $doneStepIds);
+    if ($completedFilter == 2) $query = $query->whereIn('documents.id_workflow_step', $doneStepIds);
 
     $documents = $query->get();
 
@@ -72,12 +77,12 @@ class Calendar extends \Hubleto\App\Community\Calendar\Calendar
       $isDone = in_array((int) $document->id_workflow_step, $doneStepIds);
       $events[] = [
         'id' => (int) $document->id,
-        'start' => $document->date_created,
+        'start' => substr((string) $document->created_on, 0, 10),
         'allDay' => true,
         'title' => $this->translate('Document - {{ name }}', ['name' => $document->name]),
         'color' => self::COLOR,
         'source' => 'hlthcr-documents',
-        'id_owner' => $document->id_author,
+        'id_owner' => $document->id_created_by,
         'completed' => $isDone ? 1 : 0,
         'url' => 'hlthcr-documents/documents/' . $document->id,
       ];

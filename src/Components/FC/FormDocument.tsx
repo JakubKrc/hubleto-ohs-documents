@@ -9,51 +9,45 @@ const componentName = 'FormDocument';
 const parentApp = 'Hubleto/App/External/WaiBlue/HlthcrDocuments';
 const T = new Translator(parentApp + '/Loader', 'Components/' + componentName);
 
-// The branch dropdown offers only branches of the selected client (FC lookups do not send form values).
-const InputBranchOfSelectedClient = () => {
-  const idCustomer = useRecordField('id_customer', 0);
-  return <Input
-    key={'branch-of-client-' + idCustomer}
-    field='id_branch'
-    customInputProps={{myself: {customEndpointParams: {idCustomer: idCustomer}}}}
-  />;
+// Hubleto's form has no input for a virtual column, so the client and what the document belongs to are shown as text.
+const LinkedRecordTexts = () => {
+  const customerName = useRecordField<string>('virt_hlthcr_customer', '');
+  const linkedRecordText = useRecordField<string>('virt_hlthcr_linked_record', '');
+  return <div className='flex flex-col gap-2 mb-2'>
+    <div>
+      <div className='text-sm text-gray-500'>{T.translate('Client')}</div>
+      <div>{customerName}</div>
+    </div>
+    <div>
+      <div className='text-sm text-gray-500'>{T.translate('Belongs to')}</div>
+      <div>{linkedRecordText}</div>
+    </div>
+  </div>;
 }
 
-// The audit dropdown offers only audits of the selected branch, so it is shown once a branch is chosen.
-const InputAuditOfSelectedBranch = () => {
-  const idBranch = Number(useRecordField('id_branch', 0));
-  if (idBranch <= 0) return null;
-  return <Input
-    key={'audit-of-branch-' + idBranch}
-    field='id_audit'
-    customInputProps={{myself: {customEndpointParams: {idBranch: idBranch}}}}
-  />;
-}
-
-// The creation date stays as when the document was created (the server keeps it).
+// What the document belongs to comes from the tab it was added in; the server keeps it, the author and the date.
 const TabDefault = () => {
   const form = React.useContext(FormMetaContext);
   const isSaved = form.id > 0;
   return <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
     <div>
       <Input field='name' />
-      <Input field='id_customer' />
-      <InputBranchOfSelectedClient />
-      <InputAuditOfSelectedBranch />
-      <Input field='date_created' readonly={isSaved} />
-      <Input field='file' />
+      {isSaved ? <LinkedRecordTexts /> : null}
+      <Input field='hlthcr_file' />
     </div>
     <div>
-      <Input field='priority' />
-      <Input field='id_author' />
+      <Input field='hlthcr_priority' />
+      {isSaved ? <Input field='created_on' /> : null}
+      {isSaved ? <Input field='id_created_by' /> : null}
     </div>
   </div>;
 }
 
+// Hubleto's document (model Hubleto/App/Community/Documents/Models/Document) as a work document.
 const FormDocument = (props: FormProps) => <Form
   componentName={componentName}
   parentApp={parentApp}
-  model={parentApp + '/Models/Document'}
+  model='Hubleto/App/Community/Documents/Models/Document'
   urlSlug='hlthcr-documents/documents'
   title={{field: 'name', sub: T.translate('Work document')}}
   tabs={{default: {content: () => <TabDefault />}}}

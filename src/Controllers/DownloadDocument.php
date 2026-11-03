@@ -3,7 +3,7 @@
 namespace Hubleto\App\External\WaiBlue\HlthcrDocuments\Controllers;
 
 use Hubleto\App\External\WaiBlue\HlthcrCore\Services\ProtectedFile;
-use Hubleto\App\External\WaiBlue\HlthcrDocuments\Models\Document;
+use Hubleto\App\Community\Documents\Models\Document;
 
 /**
  * Downloads the file of a work document (legacy "Zobraziť dokument") after checking the user's access.
@@ -23,17 +23,17 @@ class DownloadDocument extends \Hubleto\Erp\Controller
 
     // Read through prepareReadQuery, so documents of foreign clients are not found at all.
     $document = $this->getModel(Document::class)->record->prepareReadQuery()
-      ->where('hlthcr_documents.id', $idDocument)
+      ->where('documents.id', $idDocument)
       ->first()
     ;
     if (!$document) {
       return $protectedFile->refuse(404, $this->translate('The document does not exist.'));
     }
 
-    if ((string) $document->file == '') {
+    if ((string) $document->hlthcr_file == '') {
       return $protectedFile->refuse(404, $this->translate('No file is uploaded.'));
     }
 
-    return $protectedFile->send((string) $document->file);
+    return $protectedFile->send((string) $document->hlthcr_file);
   }
 }
