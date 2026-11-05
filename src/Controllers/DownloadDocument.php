@@ -1,8 +1,8 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments\Controllers;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments\Controllers;
 
-use Hubleto\App\External\WaiBlue\HlthcrCore\Services\ProtectedFile;
+use Hubleto\App\External\WaiBlue\OhsCore\Services\ProtectedFile;
 use Hubleto\App\Community\Documents\Models\Document;
 
 /**
@@ -30,10 +30,10 @@ class DownloadDocument extends \Hubleto\Erp\Controller
       return $protectedFile->refuse(404, $this->translate('The document does not exist.'));
     }
 
-    if ((string) $document->hlthcr_file == '') {
+    if ((string) $document->ohs_file == '') {
       return $protectedFile->refuse(404, $this->translate('No file is uploaded.'));
     }
 
-    return $protectedFile->send((string) $document->hlthcr_file);
+    return $protectedFile->send((string) $document->ohs_file);
   }
 }

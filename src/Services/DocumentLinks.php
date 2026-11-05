@@ -1,9 +1,9 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments\Services;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments\Services;
 
-use Hubleto\App\External\WaiBlue\HlthcrBranches\Services\BranchScope;
-use Hubleto\App\External\WaiBlue\HlthcrCore\Services\AccessScope;
+use Hubleto\App\External\WaiBlue\OhsBranches\Services\BranchScope;
+use Hubleto\App\External\WaiBlue\OhsCore\Services\AccessScope;
 
 /**
  * A work document belongs to a client, a branch or an audit through Hubleto's "model" + "record_id"
@@ -12,8 +12,8 @@ use Hubleto\App\External\WaiBlue\HlthcrCore\Services\AccessScope;
 class DocumentLinks extends \Hubleto\Erp\Core
 {
   const CUSTOMER_MODEL = 'Hubleto\\App\\Community\\Customers\\Models\\Customer';
-  const BRANCH_MODEL = 'Hubleto\\App\\External\\WaiBlue\\HlthcrBranches\\Models\\Branch';
-  const AUDIT_MODEL = 'Hubleto\\App\\External\\WaiBlue\\HlthcrAudits\\Models\\Audit';
+  const BRANCH_MODEL = 'Hubleto\\App\\External\\WaiBlue\\OhsBranches\\Models\\Branch';
+  const AUDIT_MODEL = 'Hubleto\\App\\External\\WaiBlue\\OhsAudits\\Models\\Audit';
 
   const LINKED_MODELS = [self::CUSTOMER_MODEL, self::BRANCH_MODEL, self::AUDIT_MODEL];
 
@@ -42,7 +42,7 @@ class DocumentLinks extends \Hubleto\Erp\Core
   public function getDocumentsOfRecord(string $modelName, int $recordId): array
   {
     return $this->db()->fetchAll(
-      'SELECT id, hlthcr_file FROM documents WHERE model = ? AND record_id = ?',
+      'SELECT id, ohs_file FROM documents WHERE model = ? AND record_id = ?',
       [$this->normalizeModelName($modelName), $recordId]
     );
   }
@@ -54,9 +54,9 @@ class DocumentLinks extends \Hubleto\Erp\Core
   {
     return 'case documents.model
       when ' . $this->quote(self::CUSTOMER_MODEL) . ' then documents.record_id
-      when ' . $this->quote(self::BRANCH_MODEL) . ' then (select hlthcr_branches.id_customer from hlthcr_branches where hlthcr_branches.id = documents.record_id)
-      when ' . $this->quote(self::AUDIT_MODEL) . ' then (select hlthcr_branches.id_customer from hlthcr_audits
-        join hlthcr_branches on hlthcr_branches.id = hlthcr_audits.id_branch where hlthcr_audits.id = documents.record_id)
+      when ' . $this->quote(self::BRANCH_MODEL) . ' then (select ohs_branches.id_customer from ohs_branches where ohs_branches.id = documents.record_id)
+      when ' . $this->quote(self::AUDIT_MODEL) . ' then (select ohs_branches.id_customer from ohs_audits
+        join ohs_branches on ohs_branches.id = ohs_audits.id_branch where ohs_audits.id = documents.record_id)
     end';
   }
 
@@ -70,16 +70,16 @@ class DocumentLinks extends \Hubleto\Erp\Core
   {
     return 'case documents.model
       when ' . $this->quote(self::CUSTOMER_MODEL) . ' then (select customers.name from customers where customers.id = documents.record_id)
-      when ' . $this->quote(self::BRANCH_MODEL) . ' then (select hlthcr_branches.name from hlthcr_branches where hlthcr_branches.id = documents.record_id)
-      when ' . $this->quote(self::AUDIT_MODEL) . ' then (select concat(date_format(hlthcr_audits.date_executed, "%d.%m.%Y"), " - ", hlthcr_branches.name)
-        from hlthcr_audits join hlthcr_branches on hlthcr_branches.id = hlthcr_audits.id_branch where hlthcr_audits.id = documents.record_id)
+      when ' . $this->quote(self::BRANCH_MODEL) . ' then (select ohs_branches.name from ohs_branches where ohs_branches.id = documents.record_id)
+      when ' . $this->quote(self::AUDIT_MODEL) . ' then (select concat(date_format(ohs_audits.date_executed, "%d.%m.%Y"), " - ", ohs_branches.name)
+        from ohs_audits join ohs_branches on ohs_branches.id = ohs_audits.id_branch where ohs_audits.id = documents.record_id)
     end';
   }
 
   /**
    * A client document follows the client's hygienist, a branch or audit document the branch's hygienist (as before the move
    * to Hubleto's documents). Medical staff see no work documents. Documents of other apps keep Hubleto's rule (everybody),
-   * but of the Hlthcr roles only administrators and managers see them (the others do not have Hubleto's Documents app).
+   * but of the Ohs roles only administrators and managers see them (the others do not have Hubleto's Documents app).
    */
   public function restrictToVisibleDocuments(mixed $query): mixed
   {
@@ -89,8 +89,8 @@ class DocumentLinks extends \Hubleto\Erp\Core
     $branchScope = $this->getService(BranchScope::class);
 
     $seesWorkDocuments = $accessScope->activeUserSeesWorkRecords();
-    $roles = $this->getService(\Hubleto\App\External\WaiBlue\HlthcrCore\Services\Roles::class);
-    $seesOtherDocuments = !$accessScope->activeUserHasHlthcrRole() || $roles->isActiveUserAdministratorOrManager();
+    $roles = $this->getService(\Hubleto\App\External\WaiBlue\OhsCore\Services\Roles::class);
+    $seesOtherDocuments = !$accessScope->activeUserHasOhsRole() || $roles->isActiveUserAdministratorOrManager();
 
     return $query->where(function ($visibleDocuments) use ($accessScope, $branchScope, $seesWorkDocuments, $seesOtherDocuments) {
       if ($seesWorkDocuments) {
@@ -105,8 +105,8 @@ class DocumentLinks extends \Hubleto\Erp\Core
         $visibleDocuments->orWhere(function ($auditDocuments) use ($branchScope) {
           $auditDocuments->where('documents.model', self::AUDIT_MODEL);
           $auditDocuments->whereIn('documents.record_id', function ($visibleAudits) use ($branchScope) {
-            $visibleAudits->select('hlthcr_audits.id')->from('hlthcr_audits');
-            $branchScope->restrictToVisibleBranches($visibleAudits, 'hlthcr_audits.id_branch');
+            $visibleAudits->select('ohs_audits.id')->from('ohs_audits');
+            $branchScope->restrictToVisibleBranches($visibleAudits, 'ohs_audits.id_branch');
           });
         });
       }

@@ -1,26 +1,26 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments;
 
 use Hubleto\App\Community\Customers\Models\Customer;
 use Hubleto\App\Community\Documents\Models\Document;
 use Hubleto\App\Community\Workflow\Models\Workflow as WorkflowModel;
 use Hubleto\App\Community\Workflow\Models\WorkflowStep;
-use Hubleto\App\External\WaiBlue\HlthcrBranches\Models\Branch;
-use Hubleto\App\External\WaiBlue\HlthcrCore\Services\DemoData;
-use Hubleto\App\External\WaiBlue\HlthcrDocuments\Services\DocumentColumns;
-use Hubleto\App\External\WaiBlue\HlthcrDocuments\Services\DocumentLinks;
+use Hubleto\App\External\WaiBlue\OhsBranches\Models\Branch;
+use Hubleto\App\External\WaiBlue\OhsCore\Services\DemoData;
+use Hubleto\App\External\WaiBlue\OhsDocuments\Services\DocumentColumns;
+use Hubleto\App\External\WaiBlue\OhsDocuments\Services\DocumentLinks;
 
-class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
+class Loader extends \Hubleto\App\External\WaiBlue\OhsCore\OhsApp
 {
   // Tags of the document workflow steps: a neutral list, because the two legacy apps have different states.
-  const STEP_WAITING_FOR_INFORMATION = 'hlthcr-document-waiting-for-information';
-  const STEP_WAITING_FOR_PROCESSING = 'hlthcr-document-waiting-for-processing';
-  const STEP_IN_PROGRESS = 'hlthcr-document-in-progress';
-  const STEP_RETURNED_WITH_COMMENTS = 'hlthcr-document-returned-with-comments';
-  const STEP_DONE = 'hlthcr-document-done';
-  const STEP_SENT_TO_CLIENT = 'hlthcr-document-sent-to-client';
-  const STEP_INVOICED = 'hlthcr-document-invoiced';
+  const STEP_WAITING_FOR_INFORMATION = 'ohs-document-waiting-for-information';
+  const STEP_WAITING_FOR_PROCESSING = 'ohs-document-waiting-for-processing';
+  const STEP_IN_PROGRESS = 'ohs-document-in-progress';
+  const STEP_RETURNED_WITH_COMMENTS = 'ohs-document-returned-with-comments';
+  const STEP_DONE = 'ohs-document-done';
+  const STEP_SENT_TO_CLIENT = 'ohs-document-sent-to-client';
+  const STEP_INVOICED = 'ohs-document-invoiced';
 
   // A document in these steps is done (the calendar's "done" filter).
   const DONE_STEP_TAGS = [self::STEP_DONE, self::STEP_SENT_TO_CLIENT, self::STEP_INVOICED];
@@ -40,17 +40,17 @@ class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
     $this->getService(DocumentColumns::class)->registerInDocumentModel();
 
     $this->router()->get([
-      '/^hlthcr-documents\/?$/' => Controllers\Home::class,
-      '/^hlthcr-documents\/settings\/?$/' => Controllers\Settings::class,
-      '/^hlthcr-documents\/documents\/(?<idDocument>\d+)\/download\/?$/' => Controllers\DownloadDocument::class,
+      '/^ohs\/documents\/?$/' => Controllers\Home::class,
+      '/^ohs\/documents\/settings\/?$/' => Controllers\Settings::class,
+      '/^ohs\/documents\/documents\/(?<idDocument>\d+)\/download\/?$/' => Controllers\DownloadDocument::class,
     ]);
-    $this->router()->crud('hlthcr-documents/documents', Controllers\Documents::class);
+    $this->router()->crud('ohs/documents/documents', Controllers\Documents::class);
 
     $this->addSearchSwitch('d', 'documents');
 
     /** @var \Hubleto\App\Community\Calendar\Manager $calendarManager */
     $calendarManager = $this->getService(\Hubleto\App\Community\Calendar\Manager::class);
-    $calendarManager->addCalendar($this, 'hlthcr-documents', Calendar::class);
+    $calendarManager->addCalendar($this, 'ohs-documents', Calendar::class);
 
     // One listener object for both events: it keeps the documents between them.
     $linkedRecordChanges = $this->getService(EventListeners\LinkedRecordChanges::class);
@@ -138,8 +138,8 @@ class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
       $results[] = [
         'id' => $document['id'],
         'label' => $document['name'],
-        'url' => 'hlthcr-documents/documents/' . $document['id'],
-        'description' => $document['virt_hlthcr_customer'] ?? '',
+        'url' => 'ohs/documents/documents/' . $document['id'],
+        'description' => $document['virt_ohs_customer'] ?? '',
       ];
     }
     return $results;
@@ -150,8 +150,8 @@ class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
     return '
       ' . $this->secondSidebarTitle() . '
       <div class="app-sidebar-buttons">
-        ' . $this->secondSidebarButton('hlthcr-documents/documents', 'fas fa-file-lines', $this->translate('Work documents')) . '
-        ' . $this->secondSidebarButton('hlthcr-documents/settings', 'fas fa-cog', $this->translate('Settings')) . '
+        ' . $this->secondSidebarButton('ohs/documents/documents', 'fas fa-file-lines', $this->translate('Work documents')) . '
+        ' . $this->secondSidebarButton('ohs/documents/settings', 'fas fa-cog', $this->translate('Settings')) . '
       </div>
     ';
   }
@@ -171,7 +171,7 @@ class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
    * Demo documents of the demo clients (FAKE data, no real files).
    * Records are inserted directly: the model rules use the logged-in user, and there is none on the command line.
    */
-  public function generateHlthcrDemoData(): void
+  public function generateOhsDemoData(): void
   {
     $demoCompanyIds = $this->getService(DemoData::class)->getDemoCompanyIds();
     $demoCustomers = $this->getModel(Customer::class)->record->whereIn('company_id', $demoCompanyIds)->get();
@@ -196,7 +196,7 @@ class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
           'name' => $name,
           'model' => DocumentLinks::CUSTOMER_MODEL,
           'record_id' => $demoCustomer->id,
-          'hlthcr_priority' => $priority,
+          'ohs_priority' => $priority,
           'id_created_by' => $demoCustomer->id_owner,
           'created_on' => date('Y-m-d H:i:s', strtotime($createdAgo)),
         ], $stepTag);
@@ -208,7 +208,7 @@ class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
           'name' => 'Prevádzkový poriadok prevádzky',
           'model' => DocumentLinks::BRANCH_MODEL,
           'record_id' => $firstBranch->id,
-          'hlthcr_priority' => DocumentColumns::PRIORITY_LOW,
+          'ohs_priority' => DocumentColumns::PRIORITY_LOW,
           'id_created_by' => $demoCustomer->id_owner,
           'created_on' => date('Y-m-d H:i:s', strtotime('-60 days')),
         ], self::STEP_DONE);

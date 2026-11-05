@@ -1,6 +1,6 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments;
 
 /**
  * Work documents on the Workflow kanban board, grouped by state.
@@ -26,8 +26,8 @@ class Workflow extends \Hubleto\App\Community\Workflow\Workflow
     $items = [];
     foreach ($documents as $document) {
       $document['_WORKFLOW_ITEM_TITLE'] = $document['name'];
-      $document['_WORKFLOW_ITEM_SUBTITLE'] = $document['virt_hlthcr_customer'] ?? '';
-      $document['_DETAIL_URL'] = 'hlthcr-documents/documents/' . $document['id'];
+      $document['_WORKFLOW_ITEM_SUBTITLE'] = $document['virt_ohs_customer'] ?? '';
+      $document['_DETAIL_URL'] = 'ohs/documents/documents/' . $document['id'];
       $document['_DETAIL_VIEW'] = '@Hubleto:App:Community:Workflow/WorkflowItemDetail.twig';
       $items[] = $document;
     }

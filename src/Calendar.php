@@ -1,11 +1,11 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments;
 
 use Hubleto\App\Community\Documents\Models\Document;
 use Hubleto\App\Community\Workflow\Models\WorkflowStep;
-use Hubleto\App\External\WaiBlue\HlthcrCore\Services\CalendarAuthor;
-use Hubleto\App\External\WaiBlue\HlthcrDocuments\Services\DocumentLinks;
+use Hubleto\App\External\WaiBlue\OhsCore\Services\CalendarAuthor;
+use Hubleto\App\External\WaiBlue\OhsDocuments\Services\DocumentLinks;
 
 /**
  * Work documents in the Hubleto calendar, one all-day event on the creation date (as in the legacy calendar).
@@ -16,7 +16,7 @@ class Calendar extends \Hubleto\App\Community\Calendar\Calendar
   // Legacy calendar colour of documents (yellow).
   const COLOR = '#e0a800';
 
-  public string $translationContext = 'hubleto-app-external-waiblue-hlthcrdocuments-loader';
+  public string $translationContext = 'hubleto-app-external-waiblue-ohsdocuments-loader';
   public string $translationContextInner = 'Calendar';
 
   public function getCalendarConfig(): array
@@ -81,10 +81,10 @@ class Calendar extends \Hubleto\App\Community\Calendar\Calendar
         'allDay' => true,
         'title' => $this->translate('Document - {{ name }}', ['name' => $document->name]),
         'color' => self::COLOR,
-        'source' => 'hlthcr-documents',
+        'source' => 'ohs-documents',
         'id_owner' => $document->id_created_by,
         'completed' => $isDone ? 1 : 0,
-        'url' => 'hlthcr-documents/documents/' . $document->id,
+        'url' => 'ohs/documents/documents/' . $document->id,
       ];
     }
 

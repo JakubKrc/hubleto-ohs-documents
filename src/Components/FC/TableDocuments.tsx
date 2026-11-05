@@ -8,7 +8,7 @@ interface TableDocumentsProps extends TableProps {
 }
 
 const componentName = 'TableDocuments'
-const parentApp = 'Hubleto/App/External/WaiBlue/HlthcrDocuments'
+const parentApp = 'Hubleto/App/External/WaiBlue/OhsDocuments'
 
 // Hubleto's documents: the work documents list, or a tab of a client, branch or audit form (linked by model + record id).
 const TableDocuments = (props: TableDocumentsProps) => {
@@ -16,7 +16,7 @@ const TableDocuments = (props: TableDocumentsProps) => {
   const linkedRecordId = props.linkedRecordId ?? 0;
   const isTabOfRecord = linkedModel != '' && linkedRecordId > 0;
 
-  const endpointParams: Record<string, any> = {hlthcrDocuments: !isTabOfRecord};
+  const endpointParams: Record<string, any> = {ohsDocuments: !isTabOfRecord};
   const formDefaultValues: Record<string, any> = {};
   if (isTabOfRecord) {
     endpointParams.linkedModel = linkedModel;
@@ -29,7 +29,7 @@ const TableDocuments = (props: TableDocumentsProps) => {
     componentName={componentName}
     parentApp={parentApp}
     model='Hubleto/App/Community/Documents/Models/Document'
-    baseUrlSlug='hlthcr-documents/documents'
+    baseUrlSlug='ohs/documents/documents'
     endpointParams={endpointParams}
     formDefaultValues={formDefaultValues}
     formModalProps={{type: 'right wide'}}

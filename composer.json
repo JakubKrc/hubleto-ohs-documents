@@ -1,15 +1,15 @@
 {
-    "name": "wai-blue/hubleto-hlthcr-documents",
+    "name": "wai-blue/hubleto-ohs-documents",
     "license": "proprietary",
-    "description": "Hlthcr for Hubleto: Working documents of clients, branches and audits with workflow states, priority and protected download",
+    "description": "Ohs for Hubleto: Working documents of clients, branches and audits with workflow states, priority and protected download",
     "require": {
-        "wai-blue/hubleto-hlthcr-core": "dev-main",
-        "wai-blue/hubleto-hlthcr-branches": "dev-main",
-        "wai-blue/hubleto-hlthcr-audits": "dev-main"
+        "wai-blue/hubleto-ohs-core": "dev-main",
+        "wai-blue/hubleto-ohs-branches": "dev-main",
+        "wai-blue/hubleto-ohs-audits": "dev-main"
     },
     "autoload": {
         "psr-4": {
-            "Hubleto\\App\\External\\WaiBlue\\HlthcrDocuments\\": "src"
+            "Hubleto\\App\\External\\WaiBlue\\OhsDocuments\\": "src"
         }
     },
     "minimum-stability": "dev"

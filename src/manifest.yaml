@@ -1,18 +1,18 @@
-namespace: Hubleto\App\External\WaiBlue\HlthcrDocuments
+namespace: Hubleto\App\External\WaiBlue\OhsDocuments
 appType: external
 sidebarGroup: custom
-rootUrlSlug: hlthcr-documents
+rootUrlSlug: ohs/documents
 name: Work documents
 icon: fas fa-file-lines
 author:
-  name: "Hlthcr"
-  nick: "hlthcr"
+  name: "Ohs"
+  nick: "ohs"
 highlight: Work documents of clients, branches and audits as Hubleto documents, with state, priority, protected download and calendar.
 requires:
   - Hubleto\App\Community\Customers
   - Hubleto\App\Community\Documents
   - Hubleto\App\Community\Workflow
   - Hubleto\App\Community\Calendar
-  - Hubleto\App\External\WaiBlue\HlthcrCore
-  - Hubleto\App\External\WaiBlue\HlthcrBranches
-  - Hubleto\App\External\WaiBlue\HlthcrAudits
+  - Hubleto\App\External\WaiBlue\OhsCore
+  - Hubleto\App\External\WaiBlue\OhsBranches
+  - Hubleto\App\External\WaiBlue\OhsAudits

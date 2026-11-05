@@ -1,6 +1,6 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments\Models;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments\Models;
 
 /**
  * The former table of work documents. Work documents are now Hubleto's documents (HubletoOverrides/Document);
@@ -8,5 +8,5 @@ namespace Hubleto\App\External\WaiBlue\HlthcrDocuments\Models;
  */
 class Document extends \Hubleto\Erp\Model
 {
-  public string $table = 'hlthcr_documents';
+  public string $table = 'ohs_documents';
 }

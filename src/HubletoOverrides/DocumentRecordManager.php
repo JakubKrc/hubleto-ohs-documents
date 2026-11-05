@@ -1,12 +1,12 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments\HubletoOverrides;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments\HubletoOverrides;
 
-use Hubleto\App\External\WaiBlue\HlthcrCore\Models\RecordManagers\Traits\DefaultOrder;
-use Hubleto\App\External\WaiBlue\HlthcrDocuments\Services\DocumentLinks;
+use Hubleto\App\External\WaiBlue\OhsCore\Models\RecordManagers\Traits\DefaultOrder;
+use Hubleto\App\External\WaiBlue\OhsDocuments\Services\DocumentLinks;
 
 /**
- * Documents the user may see (Services/DocumentLinks), and the filters of the Hlthcr document lists.
+ * Documents the user may see (Services/DocumentLinks), and the filters of the Ohs document lists.
  */
 class DocumentRecordManager extends \Hubleto\App\Community\Documents\Models\RecordManagers\Document
 {
@@ -33,7 +33,7 @@ class DocumentRecordManager extends \Hubleto\App\Community\Documents\Models\Reco
     $router = \Hubleto\Erp\Loader::getGlobalApp()->router();
 
     // The work documents list shows only documents of clients, branches and audits.
-    if ($router->urlParamAsBool('hlthcrDocuments')) {
+    if ($router->urlParamAsBool('ohsDocuments')) {
       $query = $query->whereIn($this->table . '.model', DocumentLinks::LINKED_MODELS);
     }
 
@@ -47,7 +47,7 @@ class DocumentRecordManager extends \Hubleto\App\Community\Documents\Models\Reco
     $filters = $router->urlParamAsArray('filters');
     $priority = (int) ($filters[self::PRIORITY_FILTER] ?? self::PRIORITY_FILTER_ALL);
     if ($priority != self::PRIORITY_FILTER_ALL) {
-      $query = $query->where($this->table . '.hlthcr_priority', $priority);
+      $query = $query->where($this->table . '.ohs_priority', $priority);
     }
 
     return $query;

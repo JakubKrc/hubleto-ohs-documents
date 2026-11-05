@@ -1,6 +1,6 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments\Services;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments\Services;
 
 use Hubleto\App\Community\Documents\Models\Document;
 
@@ -15,7 +15,7 @@ class DocumentColumns extends \Hubleto\Erp\Core
   const PRIORITY_MEDIUM = 2;
   const PRIORITY_LOW = 3;
 
-  public string $translationContext = 'hubleto-app-external-waiblue-hlthcrdocuments-loader';
+  public string $translationContext = 'hubleto-app-external-waiblue-ohsdocuments-loader';
   public string $translationContextInner = 'Services\\DocumentColumns';
 
   /**
@@ -24,19 +24,19 @@ class DocumentColumns extends \Hubleto\Erp\Core
   public function getSqlTypes(): array
   {
     return [
-      'hlthcr_priority' => 'int(8) NULL DEFAULT NULL',
-      'hlthcr_file' => 'varchar(255) NULL DEFAULT NULL',
+      'ohs_priority' => 'int(8) NULL DEFAULT NULL',
+      'ohs_file' => 'varchar(255) NULL DEFAULT NULL',
     ];
   }
 
   /**
    * Column name => Hubleto column definition (format of Column::fromArray()).
-   * The file is one file per document, as in both legacy apps; the Hlthcr document model serves it through a checked download.
+   * The file is one file per document, as in both legacy apps; the Ohs document model serves it through a checked download.
    */
   public function getColumnDefinitions(): array
   {
     return [
-      'hlthcr_priority' => [
+      'ohs_priority' => [
         'class' => 'Integer',
         'title' => $this->translate('Priority'),
         'defaultValue' => self::PRIORITY_LOW,
@@ -51,7 +51,7 @@ class DocumentColumns extends \Hubleto\Erp\Core
           self::PRIORITY_LOW => 'bg-green-100 text-green-800',
         ],
       ],
-      'hlthcr_file' => [
+      'ohs_file' => [
         'class' => 'File',
         'title' => $this->translate('Document'),
       ],

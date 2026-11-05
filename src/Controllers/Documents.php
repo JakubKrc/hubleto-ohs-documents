@@ -1,12 +1,12 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments\Controllers;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments\Controllers;
 
 class Documents extends \Hubleto\Erp\Controller
 {
   public function prepareView(): void
   {
     parent::prepareView();
-    $this->setView('@Hubleto:App:External:WaiBlue:HlthcrDocuments/Documents.twig');
+    $this->setView('@Hubleto:App:External:WaiBlue:OhsDocuments/Documents.twig');
   }
 }

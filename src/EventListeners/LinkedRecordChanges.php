@@ -1,9 +1,9 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments\EventListeners;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments\EventListeners;
 
-use Hubleto\App\External\WaiBlue\HlthcrCore\Services\ProtectedFile;
-use Hubleto\App\External\WaiBlue\HlthcrDocuments\Services\DocumentLinks;
+use Hubleto\App\External\WaiBlue\OhsCore\Services\ProtectedFile;
+use Hubleto\App\External\WaiBlue\OhsDocuments\Services\DocumentLinks;
 use Hubleto\Framework\Exceptions\RecordDeleteException;
 use Hubleto\Framework\Interfaces\ModelInterface;
 
@@ -13,7 +13,7 @@ use Hubleto\Framework\Interfaces\ModelInterface;
  */
 class LinkedRecordChanges extends \Hubleto\Framework\EventListener implements \Hubleto\Framework\Interfaces\EventListenerInterface
 {
-  public string $translationContext = 'hubleto-app-external-waiblue-hlthcrdocuments-loader';
+  public string $translationContext = 'hubleto-app-external-waiblue-ohsdocuments-loader';
   public string $translationContextInner = 'EventListeners\\LinkedRecordChanges';
 
   /** @var array<int, array> Documents of audits being deleted, by audit id */
@@ -43,7 +43,7 @@ class LinkedRecordChanges extends \Hubleto\Framework\EventListener implements \H
     $protectedFile = $this->getService(ProtectedFile::class);
     foreach ($this->documentsByAudit[$id] ?? [] as $document) {
       $this->db()->execute('DELETE FROM `documents` WHERE `id` = ?', [(int) $document['id']]);
-      $file = (string) $document['hlthcr_file'];
+      $file = (string) $document['ohs_file'];
       if ($file != '') $protectedFile->delete($file);
     }
     unset($this->documentsByAudit[$id]);

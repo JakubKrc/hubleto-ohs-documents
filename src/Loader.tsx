@@ -5,13 +5,13 @@ import FormCustomizer from '@hubleto/react-ui/core/FormCustomizer';
 import { type FormMeta } from '@hubleto/react-ui/components/fc/FormInterfaces';
 import TableDocuments from './Components/FC/TableDocuments'
 
-const parentApp = 'Hubleto/App/External/WaiBlue/HlthcrDocuments';
+const parentApp = 'Hubleto/App/External/WaiBlue/OhsDocuments';
 const T = new Translator(parentApp + '/Loader', 'Loader');
 
 // "Dokumenty" tabs: the documents linked directly to the client, the branch or the audit (Hubleto's model + record id).
 const CUSTOMER_MODEL = 'Hubleto/App/Community/Customers/Models/Customer';
-const BRANCH_MODEL = 'Hubleto/App/External/WaiBlue/HlthcrBranches/Models/Branch';
-const AUDIT_MODEL = 'Hubleto/App/External/WaiBlue/HlthcrAudits/Models/Audit';
+const BRANCH_MODEL = 'Hubleto/App/External/WaiBlue/OhsBranches/Models/Branch';
+const AUDIT_MODEL = 'Hubleto/App/External/WaiBlue/OhsAudits/Models/Audit';
 
 function mountDocumentsTab(linkedModel: string, saveFirstText: string) {
   return {
@@ -40,15 +40,15 @@ function mountAuditDocumentsTab() {
   return mountDocumentsTab(AUDIT_MODEL, T.translate('Save the audit first.'));
 }
 
-class HlthcrDocumentsApp extends App {
+class OhsDocumentsApp extends App {
   init() {
     super.init();
-    globalThis.hubleto.registerReactComponent('HlthcrDocumentsTableDocuments', TableDocuments);
+    globalThis.hubleto.registerReactComponent('OhsDocumentsTableDocuments', TableDocuments);
 
-    FormCustomizer.addTab('FormCustomer', 'hlthcr-documents', mountCustomerDocumentsTab);
-    FormCustomizer.addTab('FormBranch', 'hlthcr-documents', mountBranchDocumentsTab);
-    FormCustomizer.addTab('FormAudit', 'hlthcr-documents', mountAuditDocumentsTab);
+    FormCustomizer.addTab('FormCustomer', 'ohs-documents', mountCustomerDocumentsTab);
+    FormCustomizer.addTab('FormBranch', 'ohs-documents', mountBranchDocumentsTab);
+    FormCustomizer.addTab('FormAudit', 'ohs-documents', mountAuditDocumentsTab);
   }
 }
 
-globalThis.hubleto.registerApp(parentApp, new HlthcrDocumentsApp());
+globalThis.hubleto.registerApp(parentApp, new OhsDocumentsApp());

@@ -1,6 +1,6 @@
 <?php
 
-namespace Hubleto\App\External\WaiBlue\HlthcrDocuments\Models\Migrations;
+namespace Hubleto\App\External\WaiBlue\OhsDocuments\Models\Migrations;
 
 use Hubleto\Framework\Migration;
 
@@ -8,7 +8,7 @@ class Document_0001 extends Migration
 {
   public function upgradeSchema(): void
   {
-    $this->db->execute("CREATE TABLE IF NOT EXISTS `hlthcr_documents` (
+    $this->db->execute("CREATE TABLE IF NOT EXISTS `ohs_documents` (
       `id` int(8) primary key auto_increment,
       `name` varchar(255) NOT NULL,
       `id_customer` int(8) NULL DEFAULT NULL,
@@ -30,20 +30,20 @@ class Document_0001 extends Migration
 
   public function downgradeSchema(): void
   {
-    $this->db->execute("DROP TABLE IF EXISTS `hlthcr_documents`");
+    $this->db->execute("DROP TABLE IF EXISTS `ohs_documents`");
   }
 
   public function upgradeForeignKeys(): void
   {
-    $this->db->execute("ALTER TABLE `hlthcr_documents` ADD CONSTRAINT `fk__hlthcr_documents__id_customer` FOREIGN KEY (`id_customer`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT");
-    $this->db->execute("ALTER TABLE `hlthcr_documents` ADD CONSTRAINT `fk__hlthcr_documents__id_branch` FOREIGN KEY (`id_branch`) REFERENCES `hlthcr_branches` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT");
-    $this->db->execute("ALTER TABLE `hlthcr_documents` ADD CONSTRAINT `fk__hlthcr_documents__id_audit` FOREIGN KEY (`id_audit`) REFERENCES `hlthcr_audits` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT");
+    $this->db->execute("ALTER TABLE `ohs_documents` ADD CONSTRAINT `fk__ohs_documents__id_customer` FOREIGN KEY (`id_customer`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT");
+    $this->db->execute("ALTER TABLE `ohs_documents` ADD CONSTRAINT `fk__ohs_documents__id_branch` FOREIGN KEY (`id_branch`) REFERENCES `ohs_branches` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT");
+    $this->db->execute("ALTER TABLE `ohs_documents` ADD CONSTRAINT `fk__ohs_documents__id_audit` FOREIGN KEY (`id_audit`) REFERENCES `ohs_audits` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT");
   }
 
   public function downgradeForeignKeys(): void
   {
-    $this->db->execute("ALTER TABLE `hlthcr_documents` DROP FOREIGN KEY `fk__hlthcr_documents__id_customer`");
-    $this->db->execute("ALTER TABLE `hlthcr_documents` DROP FOREIGN KEY `fk__hlthcr_documents__id_branch`");
-    $this->db->execute("ALTER TABLE `hlthcr_documents` DROP FOREIGN KEY `fk__hlthcr_documents__id_audit`");
+    $this->db->execute("ALTER TABLE `ohs_documents` DROP FOREIGN KEY `fk__ohs_documents__id_customer`");
+    $this->db->execute("ALTER TABLE `ohs_documents` DROP FOREIGN KEY `fk__ohs_documents__id_branch`");
+    $this->db->execute("ALTER TABLE `ohs_documents` DROP FOREIGN KEY `fk__ohs_documents__id_audit`");
   }
 }
