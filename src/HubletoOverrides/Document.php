@@ -169,6 +169,13 @@ class Document extends CommunityDocument
     return $record;
   }
 
+  // Returned as stored (the file path instead of the uploaded data), so the form does not upload the file again.
+  public function onAfterCreate(array $savedRecord): array
+  {
+    $savedRecord = parent::onAfterCreate($savedRecord);
+    return $this->record->where('id', $savedRecord['id'])->first()->toArray();
+  }
+
   /**
    * A saved file path can only stay as it is, a new file must be uploaded. Otherwise a crafted save could
    * point the document to another record's file and download it. $originalDocument is null for a new document.
