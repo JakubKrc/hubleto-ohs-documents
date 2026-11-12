@@ -20,10 +20,6 @@ class Document extends CommunityDocument
 {
   use \Hubleto\App\External\WaiBlue\OhsCore\Models\Traits\BehavesAsCommunityModel;
   use \Hubleto\App\External\WaiBlue\OhsCore\Models\Traits\UsesCommunityCustomColumns;
-  use \Hubleto\App\External\WaiBlue\OhsCore\Models\Traits\OffersOnlyAllowedChanges;
-  use \Hubleto\App\External\WaiBlue\OhsCore\Models\Traits\UsesStoredValues;
-  use \Hubleto\App\External\WaiBlue\OhsCore\Models\Traits\KeepsStoredFiles;
-  use \Hubleto\App\External\WaiBlue\OhsCore\Models\Traits\StaysInOwnWorkflow;
 
   const WORKFLOW_GROUP = 'ohs_documents';
 
@@ -104,7 +100,7 @@ class Document extends CommunityDocument
       $description->permissions['canCreate'] = false;
     }
 
-    return $this->offerOnlyAllowedChanges($description);
+    return $description;
   }
 
   public function describeForm(): \Hubleto\Framework\Description\Form
@@ -112,7 +108,7 @@ class Document extends CommunityDocument
     $description = parent::describeForm();
     $description->defaultValues['ohs_priority'] = DocumentColumns::PRIORITY_LOW;
     $description->defaultValues['id_created_by'] = $this->authProvider()->getUserId();
-    return $this->offerOnlyAllowedChanges($description);
+    return $description;
   }
 
   public function getRelationsIncludedInLoadTableData(): array|null
@@ -139,26 +135,23 @@ class Document extends CommunityDocument
     $documentLinks = $this->getService(DocumentLinks::class);
     $modelName = $documentLinks->normalizeModelName((string) ($record['model'] ?? ''));
     $record['model'] = $modelName == '' ? null : $modelName;
-    if (!$documentLinks->isLinkedModel($modelName)) {
-      $this->refuseDocumentWithoutLink();
-      return $record;
-    }
+    if (!$documentLinks->isLinkedModel($modelName)) return $record;
 
-    if (!$documentLinks->isLinkedRecordVisible($record['model'], (int) ($record['record_id'] ?? 0))) {
-      throw new RecordSaveException($this->translate('The document must belong to a client, a branch or an audit you can see.'));
+    if (!$documentLinks->linkedRecordExists($record['model'], (int) ($record['record_id'] ?? 0))) {
+      throw new RecordSaveException($this->translate('The document must belong to a client, a branch or an audit.'));
     }
     $record['ohs_priority'] = (int) ($record['ohs_priority'] ?? DocumentColumns::PRIORITY_LOW);
 
-    // A new work document always starts in the first state (set in onAfterCreate).
-    return $this->dropSentWorkflow($record);
+    // New work documents start in the first step of the work document workflow.
+    /** @var Workflow */
+    $mWorkflow = $this->getModel(Workflow::class);
+    return $mWorkflow->applyDefaultWorkflow($record, self::WORKFLOW_GROUP);
   }
 
   public function onBeforeUpdate(array $record): array
   {
     $record = parent::onBeforeUpdate($record);
 
-    // A save that leaves out the priority would store 0 for it (Hubleto), so the stored value is used.
-    $record = $this->addStoredValuesOfMissingColumns($record, ['ohs_priority']);
     $originalDocument = $this->record->where('id', (int) $record['id'])->first();
     $record = $this->keepStoredFile($record, 'ohs_file', $originalDocument);
 
@@ -169,39 +162,30 @@ class Document extends CommunityDocument
       foreach (['model', 'record_id', 'id_created_by', 'created_on'] as $column) {
         $record[$column] = $storedValues[$column] ?? null;
       }
-    }
-
-    /** @var DocumentLinks */
-    $documentLinks = $this->getService(DocumentLinks::class);
-    if ($documentLinks->isLinkedModel((string) ($record['model'] ?? ''))) {
-      $this->refuseWorkflowOfOtherGroup($record, self::WORKFLOW_GROUP);
+      // A save that leaves out the priority would store 0 for it (Hubleto), so the stored value is used.
+      if (!array_key_exists('ohs_priority', $record)) $record['ohs_priority'] = $storedValues['ohs_priority'] ?? null;
     }
 
     return $record;
   }
 
-  public function onAfterCreate(array $savedRecord): array
+  /**
+   * A saved file path can only stay as it is, a new file must be uploaded. Otherwise a crafted save could
+   * point the document to another record's file and download it. $originalDocument is null for a new document.
+   */
+  private function keepStoredFile(array $record, string $column, mixed $originalDocument): array
   {
-    $savedRecord = parent::onAfterCreate($savedRecord);
+    if (!array_key_exists($column, $record)) return $record;
 
-    /** @var DocumentLinks */
-    $documentLinks = $this->getService(DocumentLinks::class);
-    if (!$documentLinks->isLinkedModel((string) ($savedRecord['model'] ?? ''))) return $savedRecord;
+    $value = $record[$column];
+    // Hubleto's File column stores the file name of an unchanged value as the path, so only a changed one is an upload.
+    $isNewUpload = is_array($value) && ($value['changed'] ?? false) === true;
+    $isRemoved = $value === null || $value === '';
+    if ($isNewUpload || $isRemoved) return $record;
 
-    // New work documents start in the first step of the work document workflow.
-    /** @var Workflow */
-    $mWorkflow = $this->getModel(Workflow::class);
-    $savedRecord = $mWorkflow->applyDefaultWorkflow($savedRecord, self::WORKFLOW_GROUP);
-
-    // Only the workflow columns: saving the whole record again would store the uploaded file twice.
-    $this->record->where('id', $savedRecord['id'])->update([
-      'id_workflow' => $savedRecord['id_workflow'] ?? null,
-      'id_workflow_step' => $savedRecord['id_workflow_step'] ?? null,
-    ]);
-    $this->logFirstWorkflowStep($savedRecord);
-
-    // Returned as saved in the database (e.g. the stored file path instead of the uploaded data).
-    return $this->record->where('id', $savedRecord['id'])->first()->toArray();
+    $originalPath = $originalDocument ? (string) $originalDocument->{$column} : '';
+    $record[$column] = $originalPath == '' ? null : $originalPath;
+    return $record;
   }
 
   public function onBeforeDelete(int $id): int
@@ -222,19 +206,5 @@ class Document extends CommunityDocument
     $this->fileOfDeletedDocument = '';
 
     return $id;
-  }
-
-  // Users with an Ohs role add only work documents; other documents are Hubleto's (administrators, other apps).
-  private function refuseDocumentWithoutLink(): void
-  {
-    /** @var \Hubleto\App\External\WaiBlue\OhsCore\Services\AccessScope */
-    $accessScope = $this->getService(\Hubleto\App\External\WaiBlue\OhsCore\Services\AccessScope::class);
-    /** @var \Hubleto\App\External\WaiBlue\OhsCore\Services\Roles */
-    $roles = $this->getService(\Hubleto\App\External\WaiBlue\OhsCore\Services\Roles::class);
-
-    $isOhsUser = $accessScope->activeUserHasOhsRole() && !$roles->isActiveUserAdministrator();
-    if ($isOhsUser) {
-      throw new RecordSaveException($this->translate('The document must belong to a client, a branch or an audit you can see.'));
-    }
   }
 }

@@ -65,10 +65,6 @@ class Loader extends \Hubleto\App\External\WaiBlue\OhsCore\OhsApp
   public function installApp(int $round): void
   {
     if ($round == 1) {
-      // The former table: its last migration moves the documents into Hubleto's table and drops it.
-      $this->getModel(Models\Document::class)->upgradeSchema();
-      // "php hubleto app install" runs only round 1, so foreign keys are created here too (Hubleto skips them later).
-      $this->installForeignKeys();
       $this->getService(DocumentColumns::class)->installMissingColumns();
       $this->installDocumentWorkflow();
     }

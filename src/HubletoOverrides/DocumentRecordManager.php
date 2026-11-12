@@ -6,7 +6,7 @@ use Hubleto\App\External\WaiBlue\OhsCore\Models\RecordManagers\Traits\DefaultOrd
 use Hubleto\App\External\WaiBlue\OhsDocuments\Services\DocumentLinks;
 
 /**
- * Documents the user may see (Services/DocumentLinks), and the filters of the Ohs document lists.
+ * The filters of the Ohs document lists.
  */
 class DocumentRecordManager extends \Hubleto\App\Community\Documents\Models\RecordManagers\Document
 {
@@ -14,18 +14,6 @@ class DocumentRecordManager extends \Hubleto\App\Community\Documents\Models\Reco
 
   const PRIORITY_FILTER = 'fDocumentPriority';
   const PRIORITY_FILTER_ALL = 0;
-
-  public function prepareReadQuery(mixed $query = null, int $level = 0, array|null $includeRelations = null): mixed
-  {
-    $query = parent::prepareReadQuery($query, $level, $includeRelations);
-    return $this->documentLinks()->restrictToVisibleDocuments($query);
-  }
-
-  public function prepareLookupQuery(string $search): mixed
-  {
-    $query = parent::prepareLookupQuery($search);
-    return $this->documentLinks()->restrictToVisibleDocuments($query);
-  }
 
   public function addUrlFiltersToQuery(mixed $query): mixed
   {
